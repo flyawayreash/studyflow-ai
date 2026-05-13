@@ -6,6 +6,7 @@ import {
   User, Sun, Moon, Menu, X, Zap, LogOut,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -20,6 +21,19 @@ const navItems = [
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const [location] = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { user, signOut } = useAuth();
+
+  const displayName = user?.user_metadata?.full_name
+    ?? user?.user_metadata?.name
+    ?? user?.email?.split("@")[0]
+    ?? "Student";
+  const initials = displayName.charAt(0).toUpperCase();
+  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
+
+  const handleSignOut = async () => {
+    await signOut();
+    onClose?.();
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -72,6 +86,22 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
       {/* Bottom */}
       <div className="px-3 py-4 border-t border-sidebar-border space-y-1">
+        {/* User pill */}
+        {user && (
+          <Link href="/profile" onClick={onClose}>
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-sidebar-border/50 cursor-pointer transition-all mb-1">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="w-6 h-6 rounded-full object-cover shrink-0" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  {initials}
+                </div>
+              )}
+              <span className="text-xs font-medium text-sidebar-foreground/80 truncate">{displayName}</span>
+            </div>
+          </Link>
+        )}
+
         <button
           onClick={toggleTheme}
           data-testid="button-toggle-theme"
@@ -80,12 +110,15 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           {theme === "dark" ? "Light Mode" : "Dark Mode"}
         </button>
-        <Link href="/">
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-border/50 cursor-pointer transition-all">
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </div>
-        </Link>
+
+        <button
+          onClick={handleSignOut}
+          data-testid="button-sign-out"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10 w-full transition-all"
+        >
+          <LogOut className="w-4 h-4" />
+          Sign Out
+        </button>
       </div>
     </div>
   );

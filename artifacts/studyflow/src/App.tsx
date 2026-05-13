@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/hooks/use-auth";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import HomePage from "@/pages/home";
 import LoginPage from "@/pages/login";
@@ -26,22 +28,34 @@ function AppRoutes() {
       <Route path="/" component={HomePage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/dashboard">
-        <AppLayout><DashboardPage /></AppLayout>
+        <ProtectedRoute>
+          <AppLayout><DashboardPage /></AppLayout>
+        </ProtectedRoute>
       </Route>
       <Route path="/tutor">
-        <AppLayout><TutorPage /></AppLayout>
+        <ProtectedRoute>
+          <AppLayout><TutorPage /></AppLayout>
+        </ProtectedRoute>
       </Route>
       <Route path="/notes">
-        <AppLayout><NotesPage /></AppLayout>
+        <ProtectedRoute>
+          <AppLayout><NotesPage /></AppLayout>
+        </ProtectedRoute>
       </Route>
       <Route path="/quiz">
-        <AppLayout><QuizPage /></AppLayout>
+        <ProtectedRoute>
+          <AppLayout><QuizPage /></AppLayout>
+        </ProtectedRoute>
       </Route>
       <Route path="/planner">
-        <AppLayout><PlannerPage /></AppLayout>
+        <ProtectedRoute>
+          <AppLayout><PlannerPage /></AppLayout>
+        </ProtectedRoute>
       </Route>
       <Route path="/profile">
-        <AppLayout><ProfilePage /></AppLayout>
+        <ProtectedRoute>
+          <AppLayout><ProfilePage /></AppLayout>
+        </ProtectedRoute>
       </Route>
       <Route component={NotFound} />
     </Switch>
@@ -52,12 +66,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <AppRoutes />
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <AppRoutes />
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
