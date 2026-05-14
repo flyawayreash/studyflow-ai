@@ -6,6 +6,6 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface OpenaiError {
-  error: string;
+export interface GeminiMessageInput {
+  content: string;
 }

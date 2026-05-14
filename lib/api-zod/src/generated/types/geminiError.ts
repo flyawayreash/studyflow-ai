@@ -6,10 +6,6 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface OpenaiMessage {
-  id: number;
-  conversationId: number;
-  role: string;
-  content: string;
-  createdAt: Date;
+export interface GeminiError {
+  error: string;
 }

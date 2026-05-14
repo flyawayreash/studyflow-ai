@@ -9,13 +9,13 @@ export interface HealthStatus {
   status: string;
 }
 
-export interface OpenaiConversation {
+export interface GeminiConversation {
   id: number;
   title: string;
   createdAt: string;
 }
 
-export interface OpenaiMessage {
+export interface GeminiMessage {
   id: number;
   conversationId: number;
   role: string;
@@ -23,22 +23,22 @@ export interface OpenaiMessage {
   createdAt: string;
 }
 
-export interface OpenaiConversationInput {
+export interface GeminiConversationInput {
   title: string;
 }
 
-export interface OpenaiMessageInput {
+export interface GeminiMessageInput {
   content: string;
 }
 
-export interface OpenaiConversationWithMessages {
+export interface GeminiConversationWithMessages {
   id: number;
   title: string;
   createdAt: string;
-  messages: OpenaiMessage[];
+  messages: GeminiMessage[];
 }
 
-export interface OpenaiError {
+export interface GeminiError {
   error: string;
 }
 

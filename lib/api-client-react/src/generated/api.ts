@@ -18,17 +18,17 @@ import type {
 
 import type {
   DashboardStats,
+  GeminiConversation,
+  GeminiConversationInput,
+  GeminiConversationWithMessages,
+  GeminiError,
+  GeminiMessage,
+  GeminiMessageInput,
   GenerateQuizInput,
   HealthStatus,
   Note,
   NoteInput,
   NoteUpdate,
-  OpenaiConversation,
-  OpenaiConversationInput,
-  OpenaiConversationWithMessages,
-  OpenaiError,
-  OpenaiMessage,
-  OpenaiMessageInput,
   Quiz,
   QuizInput,
   QuizWithQuestions,
@@ -47,7 +47,6 @@ type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const getHealthCheckUrl = () => {
@@ -125,29 +124,29 @@ export function useHealthCheck<
 /**
  * @summary List all conversations
  */
-export const getListOpenaiConversationsUrl = () => {
-  return `/api/openai/conversations`;
+export const getListGeminiConversationsUrl = () => {
+  return `/api/gemini/conversations`;
 };
 
-export const listOpenaiConversations = async (
+export const listGeminiConversations = async (
   options?: RequestInit,
-): Promise<OpenaiConversation[]> => {
-  return customFetch<OpenaiConversation[]>(getListOpenaiConversationsUrl(), {
+): Promise<GeminiConversation[]> => {
+  return customFetch<GeminiConversation[]>(getListGeminiConversationsUrl(), {
     ...options,
     method: "GET",
   });
 };
 
-export const getListOpenaiConversationsQueryKey = () => {
-  return [`/api/openai/conversations`] as const;
+export const getListGeminiConversationsQueryKey = () => {
+  return [`/api/gemini/conversations`] as const;
 };
 
-export const getListOpenaiConversationsQueryOptions = <
-  TData = Awaited<ReturnType<typeof listOpenaiConversations>>,
+export const getListGeminiConversationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listGeminiConversations>>,
   TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listOpenaiConversations>>,
+    Awaited<ReturnType<typeof listGeminiConversations>>,
     TError,
     TData
   >;
@@ -156,40 +155,40 @@ export const getListOpenaiConversationsQueryOptions = <
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getListOpenaiConversationsQueryKey();
+    queryOptions?.queryKey ?? getListGeminiConversationsQueryKey();
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof listOpenaiConversations>>
-  > = ({ signal }) => listOpenaiConversations({ signal, ...requestOptions });
+    Awaited<ReturnType<typeof listGeminiConversations>>
+  > = ({ signal }) => listGeminiConversations({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof listOpenaiConversations>>,
+    Awaited<ReturnType<typeof listGeminiConversations>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type ListOpenaiConversationsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof listOpenaiConversations>>
+export type ListGeminiConversationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listGeminiConversations>>
 >;
-export type ListOpenaiConversationsQueryError = ErrorType<unknown>;
+export type ListGeminiConversationsQueryError = ErrorType<unknown>;
 
 /**
  * @summary List all conversations
  */
 
-export function useListOpenaiConversations<
-  TData = Awaited<ReturnType<typeof listOpenaiConversations>>,
+export function useListGeminiConversations<
+  TData = Awaited<ReturnType<typeof listGeminiConversations>>,
   TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listOpenaiConversations>>,
+    Awaited<ReturnType<typeof listGeminiConversations>>,
     TError,
     TData
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getListOpenaiConversationsQueryOptions(options);
+  const queryOptions = getListGeminiConversationsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -201,40 +200,40 @@ export function useListOpenaiConversations<
 /**
  * @summary Create a new conversation
  */
-export const getCreateOpenaiConversationUrl = () => {
-  return `/api/openai/conversations`;
+export const getCreateGeminiConversationUrl = () => {
+  return `/api/gemini/conversations`;
 };
 
-export const createOpenaiConversation = async (
-  openaiConversationInput: OpenaiConversationInput,
+export const createGeminiConversation = async (
+  geminiConversationInput: GeminiConversationInput,
   options?: RequestInit,
-): Promise<OpenaiConversation> => {
-  return customFetch<OpenaiConversation>(getCreateOpenaiConversationUrl(), {
+): Promise<GeminiConversation> => {
+  return customFetch<GeminiConversation>(getCreateGeminiConversationUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(openaiConversationInput),
+    body: JSON.stringify(geminiConversationInput),
   });
 };
 
-export const getCreateOpenaiConversationMutationOptions = <
+export const getCreateGeminiConversationMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createOpenaiConversation>>,
+    Awaited<ReturnType<typeof createGeminiConversation>>,
     TError,
-    { data: BodyType<OpenaiConversationInput> },
+    { data: BodyType<GeminiConversationInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof createOpenaiConversation>>,
+  Awaited<ReturnType<typeof createGeminiConversation>>,
   TError,
-  { data: BodyType<OpenaiConversationInput> },
+  { data: BodyType<GeminiConversationInput> },
   TContext
 > => {
-  const mutationKey = ["createOpenaiConversation"];
+  const mutationKey = ["createGeminiConversation"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -244,60 +243,60 @@ export const getCreateOpenaiConversationMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createOpenaiConversation>>,
-    { data: BodyType<OpenaiConversationInput> }
+    Awaited<ReturnType<typeof createGeminiConversation>>,
+    { data: BodyType<GeminiConversationInput> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return createOpenaiConversation(data, requestOptions);
+    return createGeminiConversation(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type CreateOpenaiConversationMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createOpenaiConversation>>
+export type CreateGeminiConversationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createGeminiConversation>>
 >;
-export type CreateOpenaiConversationMutationBody =
-  BodyType<OpenaiConversationInput>;
-export type CreateOpenaiConversationMutationError = ErrorType<unknown>;
+export type CreateGeminiConversationMutationBody =
+  BodyType<GeminiConversationInput>;
+export type CreateGeminiConversationMutationError = ErrorType<unknown>;
 
 /**
  * @summary Create a new conversation
  */
-export const useCreateOpenaiConversation = <
+export const useCreateGeminiConversation = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createOpenaiConversation>>,
+    Awaited<ReturnType<typeof createGeminiConversation>>,
     TError,
-    { data: BodyType<OpenaiConversationInput> },
+    { data: BodyType<GeminiConversationInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
-  Awaited<ReturnType<typeof createOpenaiConversation>>,
+  Awaited<ReturnType<typeof createGeminiConversation>>,
   TError,
-  { data: BodyType<OpenaiConversationInput> },
+  { data: BodyType<GeminiConversationInput> },
   TContext
 > => {
-  return useMutation(getCreateOpenaiConversationMutationOptions(options));
+  return useMutation(getCreateGeminiConversationMutationOptions(options));
 };
 
 /**
  * @summary Get conversation with messages
  */
-export const getGetOpenaiConversationUrl = (id: number) => {
-  return `/api/openai/conversations/${id}`;
+export const getGetGeminiConversationUrl = (id: number) => {
+  return `/api/gemini/conversations/${id}`;
 };
 
-export const getOpenaiConversation = async (
+export const getGeminiConversation = async (
   id: number,
   options?: RequestInit,
-): Promise<OpenaiConversationWithMessages> => {
-  return customFetch<OpenaiConversationWithMessages>(
-    getGetOpenaiConversationUrl(id),
+): Promise<GeminiConversationWithMessages> => {
+  return customFetch<GeminiConversationWithMessages>(
+    getGetGeminiConversationUrl(id),
     {
       ...options,
       method: "GET",
@@ -305,18 +304,18 @@ export const getOpenaiConversation = async (
   );
 };
 
-export const getGetOpenaiConversationQueryKey = (id: number) => {
-  return [`/api/openai/conversations/${id}`] as const;
+export const getGetGeminiConversationQueryKey = (id: number) => {
+  return [`/api/gemini/conversations/${id}`] as const;
 };
 
-export const getGetOpenaiConversationQueryOptions = <
-  TData = Awaited<ReturnType<typeof getOpenaiConversation>>,
-  TError = ErrorType<OpenaiError>,
+export const getGetGeminiConversationQueryOptions = <
+  TData = Awaited<ReturnType<typeof getGeminiConversation>>,
+  TError = ErrorType<GeminiError>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getOpenaiConversation>>,
+      Awaited<ReturnType<typeof getGeminiConversation>>,
       TError,
       TData
     >;
@@ -326,11 +325,11 @@ export const getGetOpenaiConversationQueryOptions = <
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getGetOpenaiConversationQueryKey(id);
+    queryOptions?.queryKey ?? getGetGeminiConversationQueryKey(id);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getOpenaiConversation>>
-  > = ({ signal }) => getOpenaiConversation(id, { signal, ...requestOptions });
+    Awaited<ReturnType<typeof getGeminiConversation>>
+  > = ({ signal }) => getGeminiConversation(id, { signal, ...requestOptions });
 
   return {
     queryKey,
@@ -338,36 +337,36 @@ export const getGetOpenaiConversationQueryOptions = <
     enabled: !!id,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof getOpenaiConversation>>,
+    Awaited<ReturnType<typeof getGeminiConversation>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetOpenaiConversationQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getOpenaiConversation>>
+export type GetGeminiConversationQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGeminiConversation>>
 >;
-export type GetOpenaiConversationQueryError = ErrorType<OpenaiError>;
+export type GetGeminiConversationQueryError = ErrorType<GeminiError>;
 
 /**
  * @summary Get conversation with messages
  */
 
-export function useGetOpenaiConversation<
-  TData = Awaited<ReturnType<typeof getOpenaiConversation>>,
-  TError = ErrorType<OpenaiError>,
+export function useGetGeminiConversation<
+  TData = Awaited<ReturnType<typeof getGeminiConversation>>,
+  TError = ErrorType<GeminiError>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getOpenaiConversation>>,
+      Awaited<ReturnType<typeof getGeminiConversation>>,
       TError,
       TData
     >;
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetOpenaiConversationQueryOptions(id, options);
+  const queryOptions = getGetGeminiConversationQueryOptions(id, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -379,38 +378,38 @@ export function useGetOpenaiConversation<
 /**
  * @summary Delete a conversation
  */
-export const getDeleteOpenaiConversationUrl = (id: number) => {
-  return `/api/openai/conversations/${id}`;
+export const getDeleteGeminiConversationUrl = (id: number) => {
+  return `/api/gemini/conversations/${id}`;
 };
 
-export const deleteOpenaiConversation = async (
+export const deleteGeminiConversation = async (
   id: number,
   options?: RequestInit,
 ): Promise<void> => {
-  return customFetch<void>(getDeleteOpenaiConversationUrl(id), {
+  return customFetch<void>(getDeleteGeminiConversationUrl(id), {
     ...options,
     method: "DELETE",
   });
 };
 
-export const getDeleteOpenaiConversationMutationOptions = <
-  TError = ErrorType<OpenaiError>,
+export const getDeleteGeminiConversationMutationOptions = <
+  TError = ErrorType<GeminiError>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteOpenaiConversation>>,
+    Awaited<ReturnType<typeof deleteGeminiConversation>>,
     TError,
     { id: number },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteOpenaiConversation>>,
+  Awaited<ReturnType<typeof deleteGeminiConversation>>,
   TError,
   { id: number },
   TContext
 > => {
-  const mutationKey = ["deleteOpenaiConversation"];
+  const mutationKey = ["deleteGeminiConversation"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -420,75 +419,75 @@ export const getDeleteOpenaiConversationMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteOpenaiConversation>>,
+    Awaited<ReturnType<typeof deleteGeminiConversation>>,
     { id: number }
   > = (props) => {
     const { id } = props ?? {};
 
-    return deleteOpenaiConversation(id, requestOptions);
+    return deleteGeminiConversation(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type DeleteOpenaiConversationMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteOpenaiConversation>>
+export type DeleteGeminiConversationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGeminiConversation>>
 >;
 
-export type DeleteOpenaiConversationMutationError = ErrorType<OpenaiError>;
+export type DeleteGeminiConversationMutationError = ErrorType<GeminiError>;
 
 /**
  * @summary Delete a conversation
  */
-export const useDeleteOpenaiConversation = <
-  TError = ErrorType<OpenaiError>,
+export const useDeleteGeminiConversation = <
+  TError = ErrorType<GeminiError>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteOpenaiConversation>>,
+    Awaited<ReturnType<typeof deleteGeminiConversation>>,
     TError,
     { id: number },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
-  Awaited<ReturnType<typeof deleteOpenaiConversation>>,
+  Awaited<ReturnType<typeof deleteGeminiConversation>>,
   TError,
   { id: number },
   TContext
 > => {
-  return useMutation(getDeleteOpenaiConversationMutationOptions(options));
+  return useMutation(getDeleteGeminiConversationMutationOptions(options));
 };
 
 /**
  * @summary List messages in a conversation
  */
-export const getListOpenaiMessagesUrl = (id: number) => {
-  return `/api/openai/conversations/${id}/messages`;
+export const getListGeminiMessagesUrl = (id: number) => {
+  return `/api/gemini/conversations/${id}/messages`;
 };
 
-export const listOpenaiMessages = async (
+export const listGeminiMessages = async (
   id: number,
   options?: RequestInit,
-): Promise<OpenaiMessage[]> => {
-  return customFetch<OpenaiMessage[]>(getListOpenaiMessagesUrl(id), {
+): Promise<GeminiMessage[]> => {
+  return customFetch<GeminiMessage[]>(getListGeminiMessagesUrl(id), {
     ...options,
     method: "GET",
   });
 };
 
-export const getListOpenaiMessagesQueryKey = (id: number) => {
-  return [`/api/openai/conversations/${id}/messages`] as const;
+export const getListGeminiMessagesQueryKey = (id: number) => {
+  return [`/api/gemini/conversations/${id}/messages`] as const;
 };
 
-export const getListOpenaiMessagesQueryOptions = <
-  TData = Awaited<ReturnType<typeof listOpenaiMessages>>,
+export const getListGeminiMessagesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listGeminiMessages>>,
   TError = ErrorType<unknown>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listOpenaiMessages>>,
+      Awaited<ReturnType<typeof listGeminiMessages>>,
       TError,
       TData
     >;
@@ -497,11 +496,11 @@ export const getListOpenaiMessagesQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getListOpenaiMessagesQueryKey(id);
+  const queryKey = queryOptions?.queryKey ?? getListGeminiMessagesQueryKey(id);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof listOpenaiMessages>>
-  > = ({ signal }) => listOpenaiMessages(id, { signal, ...requestOptions });
+    Awaited<ReturnType<typeof listGeminiMessages>>
+  > = ({ signal }) => listGeminiMessages(id, { signal, ...requestOptions });
 
   return {
     queryKey,
@@ -509,36 +508,36 @@ export const getListOpenaiMessagesQueryOptions = <
     enabled: !!id,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof listOpenaiMessages>>,
+    Awaited<ReturnType<typeof listGeminiMessages>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type ListOpenaiMessagesQueryResult = NonNullable<
-  Awaited<ReturnType<typeof listOpenaiMessages>>
+export type ListGeminiMessagesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listGeminiMessages>>
 >;
-export type ListOpenaiMessagesQueryError = ErrorType<unknown>;
+export type ListGeminiMessagesQueryError = ErrorType<unknown>;
 
 /**
  * @summary List messages in a conversation
  */
 
-export function useListOpenaiMessages<
-  TData = Awaited<ReturnType<typeof listOpenaiMessages>>,
+export function useListGeminiMessages<
+  TData = Awaited<ReturnType<typeof listGeminiMessages>>,
   TError = ErrorType<unknown>,
 >(
   id: number,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listOpenaiMessages>>,
+      Awaited<ReturnType<typeof listGeminiMessages>>,
       TError,
       TData
     >;
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getListOpenaiMessagesQueryOptions(id, options);
+  const queryOptions = getListGeminiMessagesQueryOptions(id, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -548,43 +547,43 @@ export function useListOpenaiMessages<
 }
 
 /**
- * @summary Send a text message and receive a streaming text response
+ * @summary Send a message and receive an AI response (SSE stream)
  */
-export const getSendOpenaiMessageUrl = (id: number) => {
-  return `/api/openai/conversations/${id}/messages`;
+export const getSendGeminiMessageUrl = (id: number) => {
+  return `/api/gemini/conversations/${id}/messages`;
 };
 
-export const sendOpenaiMessage = async (
+export const sendGeminiMessage = async (
   id: number,
-  openaiMessageInput: OpenaiMessageInput,
+  geminiMessageInput: GeminiMessageInput,
   options?: RequestInit,
 ): Promise<unknown> => {
-  return customFetch<unknown>(getSendOpenaiMessageUrl(id), {
+  return customFetch<unknown>(getSendGeminiMessageUrl(id), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(openaiMessageInput),
+    body: JSON.stringify(geminiMessageInput),
   });
 };
 
-export const getSendOpenaiMessageMutationOptions = <
+export const getSendGeminiMessageMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof sendOpenaiMessage>>,
+    Awaited<ReturnType<typeof sendGeminiMessage>>,
     TError,
-    { id: number; data: BodyType<OpenaiMessageInput> },
+    { id: number; data: BodyType<GeminiMessageInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof sendOpenaiMessage>>,
+  Awaited<ReturnType<typeof sendGeminiMessage>>,
   TError,
-  { id: number; data: BodyType<OpenaiMessageInput> },
+  { id: number; data: BodyType<GeminiMessageInput> },
   TContext
 > => {
-  const mutationKey = ["sendOpenaiMessage"];
+  const mutationKey = ["sendGeminiMessage"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -594,44 +593,44 @@ export const getSendOpenaiMessageMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof sendOpenaiMessage>>,
-    { id: number; data: BodyType<OpenaiMessageInput> }
+    Awaited<ReturnType<typeof sendGeminiMessage>>,
+    { id: number; data: BodyType<GeminiMessageInput> }
   > = (props) => {
     const { id, data } = props ?? {};
 
-    return sendOpenaiMessage(id, data, requestOptions);
+    return sendGeminiMessage(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type SendOpenaiMessageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof sendOpenaiMessage>>
+export type SendGeminiMessageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof sendGeminiMessage>>
 >;
-export type SendOpenaiMessageMutationBody = BodyType<OpenaiMessageInput>;
-export type SendOpenaiMessageMutationError = ErrorType<unknown>;
+export type SendGeminiMessageMutationBody = BodyType<GeminiMessageInput>;
+export type SendGeminiMessageMutationError = ErrorType<unknown>;
 
 /**
- * @summary Send a text message and receive a streaming text response
+ * @summary Send a message and receive an AI response (SSE stream)
  */
-export const useSendOpenaiMessage = <
+export const useSendGeminiMessage = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof sendOpenaiMessage>>,
+    Awaited<ReturnType<typeof sendGeminiMessage>>,
     TError,
-    { id: number; data: BodyType<OpenaiMessageInput> },
+    { id: number; data: BodyType<GeminiMessageInput> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
-  Awaited<ReturnType<typeof sendOpenaiMessage>>,
+  Awaited<ReturnType<typeof sendGeminiMessage>>,
   TError,
-  { id: number; data: BodyType<OpenaiMessageInput> },
+  { id: number; data: BodyType<GeminiMessageInput> },
   TContext
 > => {
-  return useMutation(getSendOpenaiMessageMutationOptions(options));
+  return useMutation(getSendGeminiMessageMutationOptions(options));
 };
 
 /**
@@ -1034,7 +1033,7 @@ export const useDeleteNote = <
 };
 
 /**
- * @summary Summarize a note using AI (streaming)
+ * @summary Summarize a note using Gemini AI (streaming)
  */
 export const getSummarizeNoteUrl = (id: number) => {
   return `/api/notes/${id}/summarize`;
@@ -1095,7 +1094,7 @@ export type SummarizeNoteMutationResult = NonNullable<
 export type SummarizeNoteMutationError = ErrorType<unknown>;
 
 /**
- * @summary Summarize a note using AI (streaming)
+ * @summary Summarize a note using Gemini AI (streaming)
  */
 export const useSummarizeNote = <
   TError = ErrorType<unknown>,
@@ -1438,7 +1437,7 @@ export const useDeleteQuiz = <
 };
 
 /**
- * @summary Generate a quiz using AI from a topic or text
+ * @summary Generate a quiz using Gemini AI from a topic
  */
 export const getGenerateQuizUrl = () => {
   return `/api/quizzes/generate`;
@@ -1501,7 +1500,7 @@ export type GenerateQuizMutationBody = BodyType<GenerateQuizInput>;
 export type GenerateQuizMutationError = ErrorType<unknown>;
 
 /**
- * @summary Generate a quiz using AI from a topic or text
+ * @summary Generate a quiz using Gemini AI from a topic
  */
 export const useGenerateQuiz = <
   TError = ErrorType<unknown>,

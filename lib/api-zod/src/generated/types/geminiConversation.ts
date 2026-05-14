@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface OpenaiConversationInput {
+export interface GeminiConversation {
+  id: number;
   title: string;
+  createdAt: Date;
 }

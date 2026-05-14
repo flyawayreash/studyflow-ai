@@ -1,17 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  useListOpenaiConversations,
-  useCreateOpenaiConversation,
-  useGetOpenaiConversation,
-  useDeleteOpenaiConversation,
-  getListOpenaiConversationsQueryKey,
-  getGetOpenaiConversationQueryKey,
+  useListGeminiConversations,
+  useCreateGeminiConversation,
+  useGetGeminiConversation,
+  useDeleteGeminiConversation,
+  getListGeminiConversationsQueryKey,
+  getGetGeminiConversationQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Plus, Send, Trash2, Bot, User, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
 
 interface StreamMessage {
   role: "user" | "assistant";
@@ -29,12 +28,12 @@ export default function TutorPage() {
   const [showNewForm, setShowNewForm] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const { data: conversations = [], isLoading: loadingConvos } = useListOpenaiConversations();
-  const { data: activeConvo } = useGetOpenaiConversation(activeConvoId!, {
-    query: { enabled: !!activeConvoId, queryKey: getGetOpenaiConversationQueryKey(activeConvoId!) },
+  const { data: conversations = [], isLoading: loadingConvos } = useListGeminiConversations();
+  const { data: activeConvo } = useGetGeminiConversation(activeConvoId!, {
+    query: { enabled: !!activeConvoId, queryKey: getGetGeminiConversationQueryKey(activeConvoId!) },
   });
-  const createConvo = useCreateOpenaiConversation();
-  const deleteConvo = useDeleteOpenaiConversation();
+  const createConvo = useCreateGeminiConversation();
+  const deleteConvo = useDeleteGeminiConversation();
 
   useEffect(() => {
     if (activeConvo?.messages) {
@@ -51,7 +50,7 @@ export default function TutorPage() {
   const handleNewConvo = async () => {
     if (!newTitle.trim()) return;
     const convo = await createConvo.mutateAsync({ data: { title: newTitle.trim() } });
-    queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getListGeminiConversationsQueryKey() });
     setActiveConvoId(convo.id);
     setStreamMessages([]);
     setNewTitle("");
@@ -64,12 +63,10 @@ export default function TutorPage() {
     setInput("");
     setStreamMessages((prev) => [...prev, { role: "user", content: userMsg }]);
     setIsStreaming(true);
-
-    const assistantIdx = streamMessages.length + 1;
     setStreamMessages((prev) => [...prev, { role: "assistant", content: "", streaming: true }]);
 
     try {
-      const res = await fetch(`/api/openai/conversations/${activeConvoId}/messages`, {
+      const res = await fetch(`/api/gemini/conversations/${activeConvoId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: userMsg }),
@@ -89,7 +86,7 @@ export default function TutorPage() {
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             try {
-              const data = JSON.parse(line.slice(6));
+              const data = JSON.parse(line.slice(6)) as { content?: string; done?: boolean };
               if (data.content) {
                 full += data.content;
                 setStreamMessages((prev) => {
@@ -192,7 +189,7 @@ export default function TutorPage() {
                     e.stopPropagation();
                     deleteConvo.mutate({ id: c.id }, {
                       onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
+                        queryClient.invalidateQueries({ queryKey: getListGeminiConversationsQueryKey() });
                         if (activeConvoId === c.id) { setActiveConvoId(null); setStreamMessages([]); }
                       },
                     });
@@ -216,7 +213,7 @@ export default function TutorPage() {
             </div>
             <h2 className="text-xl font-bold mb-2">StudyFlow AI Tutor</h2>
             <p className="text-muted-foreground text-sm max-w-sm mb-6">
-              Your personal AI tutor is ready to help. Ask questions, get explanations, and learn anything.
+              Powered by Google Gemini. Ask questions, get explanations, and master any topic instantly.
             </p>
             <button
               onClick={() => setShowNewForm(true)}
@@ -246,7 +243,7 @@ export default function TutorPage() {
                       {msg.role === "user" ? <User className="w-4 h-4 text-primary" /> : <Bot className="w-4 h-4 text-white" />}
                     </div>
                     <div className={cn(
-                      "flex-1 px-4 py-3 rounded-2xl text-sm leading-relaxed",
+                      "flex-1 px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap",
                       msg.role === "user"
                         ? "bg-primary text-primary-foreground rounded-tr-sm"
                         : "bg-card border border-border rounded-tl-sm"
@@ -284,7 +281,7 @@ export default function TutorPage() {
                   {isStreaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </motion.button>
               </div>
-              <p className="text-center text-xs text-muted-foreground mt-2">Shift+Enter for new line</p>
+              <p className="text-center text-xs text-muted-foreground mt-2">Powered by Gemini · Shift+Enter for new line</p>
             </div>
           </>
         )}

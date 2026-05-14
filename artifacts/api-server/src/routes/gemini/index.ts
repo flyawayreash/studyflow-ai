@@ -2,18 +2,18 @@ import { Router, type IRouter } from "express";
 import { eq, asc } from "drizzle-orm";
 import { db, conversations, messages } from "@workspace/db";
 import {
-  CreateOpenaiConversationBody,
-  SendOpenaiMessageBody,
-  GetOpenaiConversationParams,
-  DeleteOpenaiConversationParams,
-  ListOpenaiMessagesParams,
-  SendOpenaiMessageParams,
+  CreateGeminiConversationBody,
+  SendGeminiMessageBody,
+  GetGeminiConversationParams,
+  DeleteGeminiConversationParams,
+  ListGeminiMessagesParams,
+  SendGeminiMessageParams,
 } from "@workspace/api-zod";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { ai } from "@workspace/integrations-gemini-ai";
 
 const router: IRouter = Router();
 
-router.get("/openai/conversations", async (_req, res): Promise<void> => {
+router.get("/gemini/conversations", async (_req, res): Promise<void> => {
   const convos = await db
     .select()
     .from(conversations)
@@ -21,8 +21,8 @@ router.get("/openai/conversations", async (_req, res): Promise<void> => {
   res.json(convos);
 });
 
-router.post("/openai/conversations", async (req, res): Promise<void> => {
-  const parsed = CreateOpenaiConversationBody.safeParse(req.body);
+router.post("/gemini/conversations", async (req, res): Promise<void> => {
+  const parsed = CreateGeminiConversationBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
@@ -34,8 +34,8 @@ router.post("/openai/conversations", async (req, res): Promise<void> => {
   res.status(201).json(convo);
 });
 
-router.get("/openai/conversations/:id", async (req, res): Promise<void> => {
-  const params = GetOpenaiConversationParams.safeParse(req.params);
+router.get("/gemini/conversations/:id", async (req, res): Promise<void> => {
+  const params = GetGeminiConversationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
@@ -57,8 +57,8 @@ router.get("/openai/conversations/:id", async (req, res): Promise<void> => {
   res.json({ ...convo, messages: msgs });
 });
 
-router.delete("/openai/conversations/:id", async (req, res): Promise<void> => {
-  const params = DeleteOpenaiConversationParams.safeParse(req.params);
+router.delete("/gemini/conversations/:id", async (req, res): Promise<void> => {
+  const params = DeleteGeminiConversationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
@@ -75,9 +75,9 @@ router.delete("/openai/conversations/:id", async (req, res): Promise<void> => {
 });
 
 router.get(
-  "/openai/conversations/:id/messages",
+  "/gemini/conversations/:id/messages",
   async (req, res): Promise<void> => {
-    const params = ListOpenaiMessagesParams.safeParse(req.params);
+    const params = ListGeminiMessagesParams.safeParse(req.params);
     if (!params.success) {
       res.status(400).json({ error: params.error.message });
       return;
@@ -92,14 +92,14 @@ router.get(
 );
 
 router.post(
-  "/openai/conversations/:id/messages",
+  "/gemini/conversations/:id/messages",
   async (req, res): Promise<void> => {
-    const params = SendOpenaiMessageParams.safeParse(req.params);
+    const params = SendGeminiMessageParams.safeParse(req.params);
     if (!params.success) {
       res.status(400).json({ error: params.error.message });
       return;
     }
-    const parsed = SendOpenaiMessageBody.safeParse(req.body);
+    const parsed = SendGeminiMessageBody.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: parsed.error.message });
       return;
@@ -121,7 +121,7 @@ router.post(
       content: parsed.data.content,
     });
 
-    // Get conversation history
+    // Get full conversation history
     const history = await db
       .select()
       .from(messages)
@@ -133,28 +133,35 @@ router.post(
     res.setHeader("Connection", "keep-alive");
 
     let fullResponse = "";
-    const stream = await openai.chat.completions.create({
-      model: "gpt-5-mini",
-      max_completion_tokens: 8192,
-      messages: [
+
+    const stream = await ai.models.generateContentStream({
+      model: "gemini-2.5-flash",
+      contents: [
         {
-          role: "system",
-          content:
-            "You are StudyFlow AI, an expert AI tutor and study companion. You help students understand difficult concepts, answer questions clearly, provide examples, create mnemonics, and guide their learning journey. Be encouraging, clear, and thorough.",
+          role: "user",
+          parts: [
+            {
+              text: "You are StudyFlow AI, an expert AI tutor and study companion. Help students understand difficult concepts, answer questions clearly, provide examples, create mnemonics, and guide their learning. Be encouraging, clear, and thorough.",
+            },
+          ],
+        },
+        {
+          role: "model",
+          parts: [{ text: "Understood! I'm your StudyFlow AI tutor, ready to help you learn. What would you like to study today?" }],
         },
         ...history.map((m) => ({
-          role: m.role as "user" | "assistant",
-          content: m.content,
+          role: m.role === "assistant" ? ("model" as const) : ("user" as const),
+          parts: [{ text: m.content }],
         })),
       ],
-      stream: true,
+      config: { maxOutputTokens: 8192 },
     });
 
     for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content;
-      if (content) {
-        fullResponse += content;
-        res.write(`data: ${JSON.stringify({ content })}\n\n`);
+      const text = chunk.text;
+      if (text) {
+        fullResponse += text;
+        res.write(`data: ${JSON.stringify({ content: text })}\n\n`);
       }
     }
 

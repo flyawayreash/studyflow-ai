@@ -5,11 +5,11 @@
  * StudyFlow AI API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { OpenaiMessage } from "./openaiMessage";
+import type { GeminiMessage } from "./geminiMessage";
 
-export interface OpenaiConversationWithMessages {
+export interface GeminiConversationWithMessages {
   id: number;
   title: string;
   createdAt: Date;
-  messages: OpenaiMessage[];
+  messages: GeminiMessage[];
 }

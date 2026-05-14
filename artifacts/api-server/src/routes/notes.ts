@@ -9,8 +9,7 @@ import {
   DeleteNoteParams,
   SummarizeNoteParams,
 } from "@workspace/api-zod";
-import { openai } from "@workspace/integrations-openai-ai-server";
-import { logger } from "../lib/logger";
+import { ai } from "@workspace/integrations-gemini-ai";
 
 const router: IRouter = Router();
 
@@ -109,28 +108,27 @@ router.post("/notes/:id/summarize", async (req, res): Promise<void> => {
   res.setHeader("Connection", "keep-alive");
 
   let summary = "";
-  const stream = await openai.chat.completions.create({
-    model: "gpt-5-mini",
-    max_completion_tokens: 8192,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are an expert study assistant. Summarize the provided notes concisely and clearly, highlighting key concepts, important facts, and main takeaways. Use bullet points where helpful. Be thorough but concise.",
-      },
+
+  const stream = await ai.models.generateContentStream({
+    model: "gemini-2.5-flash",
+    contents: [
       {
         role: "user",
-        content: `Please summarize these notes titled "${note.title}":\n\n${note.content}`,
+        parts: [
+          {
+            text: `You are an expert study assistant. Summarize these notes titled "${note.title}" concisely and clearly, highlighting key concepts, important facts, and main takeaways. Use bullet points where helpful. Be thorough but concise.\n\nNotes:\n${note.content}`,
+          },
+        ],
       },
     ],
-    stream: true,
+    config: { maxOutputTokens: 8192 },
   });
 
   for await (const chunk of stream) {
-    const content = chunk.choices[0]?.delta?.content;
-    if (content) {
-      summary += content;
-      res.write(`data: ${JSON.stringify({ content })}\n\n`);
+    const text = chunk.text;
+    if (text) {
+      summary += text;
+      res.write(`data: ${JSON.stringify({ content: text })}\n\n`);
     }
   }
 

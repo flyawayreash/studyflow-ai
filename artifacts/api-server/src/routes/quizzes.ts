@@ -7,7 +7,7 @@ import {
   DeleteQuizParams,
   GenerateQuizBody,
 } from "@workspace/api-zod";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { ai } from "@workspace/integrations-gemini-ai";
 
 const router: IRouter = Router();
 
@@ -91,13 +91,14 @@ router.post("/quizzes/generate", async (req, res): Promise<void> => {
 
   const { topic, numQuestions = 5, difficulty = "medium" } = parsed.data;
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-5-mini",
-    max_completion_tokens: 8192,
-    messages: [
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
       {
-        role: "system",
-        content: `You are an expert educator. Generate a quiz with exactly ${numQuestions} multiple choice questions about the given topic at ${difficulty} difficulty. 
+        role: "user",
+        parts: [
+          {
+            text: `You are an expert educator. Generate a quiz with exactly ${numQuestions} multiple choice questions about the given topic at ${difficulty} difficulty.
 Return ONLY a valid JSON object with this structure:
 {
   "title": "Quiz title",
@@ -110,17 +111,20 @@ Return ONLY a valid JSON object with this structure:
     }
   ]
 }
-correctAnswer is a 0-based index into options.`,
-      },
-      {
-        role: "user",
-        content: `Generate a ${difficulty} quiz about: ${topic}`,
+correctAnswer is a 0-based index into options.
+
+Topic: ${topic}`,
+          },
+        ],
       },
     ],
-    response_format: { type: "json_object" },
+    config: {
+      maxOutputTokens: 8192,
+      responseMimeType: "application/json",
+    },
   });
 
-  const raw = completion.choices[0]?.message?.content ?? "{}";
+  const raw = response.text ?? "{}";
   const parsed2 = JSON.parse(raw) as {
     title: string;
     questions: Array<{

@@ -8,7 +8,6 @@
 import * as zod from "zod";
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -18,30 +17,30 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary List all conversations
  */
-export const ListOpenaiConversationsResponseItem = zod.object({
+export const ListGeminiConversationsResponseItem = zod.object({
   id: zod.number(),
   title: zod.string(),
   createdAt: zod.coerce.date(),
 });
-export const ListOpenaiConversationsResponse = zod.array(
-  ListOpenaiConversationsResponseItem,
+export const ListGeminiConversationsResponse = zod.array(
+  ListGeminiConversationsResponseItem,
 );
 
 /**
  * @summary Create a new conversation
  */
-export const CreateOpenaiConversationBody = zod.object({
+export const CreateGeminiConversationBody = zod.object({
   title: zod.string(),
 });
 
 /**
  * @summary Get conversation with messages
  */
-export const GetOpenaiConversationParams = zod.object({
+export const GetGeminiConversationParams = zod.object({
   id: zod.coerce.number(),
 });
 
-export const GetOpenaiConversationResponse = zod.object({
+export const GetGeminiConversationResponse = zod.object({
   id: zod.number(),
   title: zod.string(),
   createdAt: zod.coerce.date(),
@@ -59,36 +58,36 @@ export const GetOpenaiConversationResponse = zod.object({
 /**
  * @summary Delete a conversation
  */
-export const DeleteOpenaiConversationParams = zod.object({
+export const DeleteGeminiConversationParams = zod.object({
   id: zod.coerce.number(),
 });
 
 /**
  * @summary List messages in a conversation
  */
-export const ListOpenaiMessagesParams = zod.object({
+export const ListGeminiMessagesParams = zod.object({
   id: zod.coerce.number(),
 });
 
-export const ListOpenaiMessagesResponseItem = zod.object({
+export const ListGeminiMessagesResponseItem = zod.object({
   id: zod.number(),
   conversationId: zod.number(),
   role: zod.string(),
   content: zod.string(),
   createdAt: zod.coerce.date(),
 });
-export const ListOpenaiMessagesResponse = zod.array(
-  ListOpenaiMessagesResponseItem,
+export const ListGeminiMessagesResponse = zod.array(
+  ListGeminiMessagesResponseItem,
 );
 
 /**
- * @summary Send a text message and receive a streaming text response
+ * @summary Send a message and receive an AI response (SSE stream)
  */
-export const SendOpenaiMessageParams = zod.object({
+export const SendGeminiMessageParams = zod.object({
   id: zod.coerce.number(),
 });
 
-export const SendOpenaiMessageBody = zod.object({
+export const SendGeminiMessageBody = zod.object({
   content: zod.string(),
 });
 
@@ -165,7 +164,7 @@ export const DeleteNoteParams = zod.object({
 });
 
 /**
- * @summary Summarize a note using AI (streaming)
+ * @summary Summarize a note using Gemini AI (streaming)
  */
 export const SummarizeNoteParams = zod.object({
   id: zod.coerce.number(),
@@ -225,7 +224,7 @@ export const DeleteQuizParams = zod.object({
 });
 
 /**
- * @summary Generate a quiz using AI from a topic or text
+ * @summary Generate a quiz using Gemini AI from a topic
  */
 
 export const generateQuizBodyNumQuestionsMax = 20;
